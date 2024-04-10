@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Coding Style Checker
         run: |
-          check.sh $(pwd) $(pwd)
+          coding-style.sh $(pwd) $(pwd)
       - name: Check coding
         run: |
             if [ -s c-s-r.log ]; then

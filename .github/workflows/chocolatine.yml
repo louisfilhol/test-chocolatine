@@ -24,40 +24,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Run Coding Style Checker
         run: |
           coding-style.sh . .
       - name: Check coding
         run: |
-            if [ -s c-s-r.log ]; then
-            while IFS= read -r l; do
-            f=$(echo "$l" | cut -d ':' -f 1)
-            l_n=$(echo "$l" | cut -d ':' -f 2)
-            e_t=$(echo "$l" | cut -d ':' -f 3 | cut -d '-' -f 1)
-            e_c=$(echo "$l" | cut -d ':' -f 4)
-            echo "::error file=$f,line=$l_n,title=$e_t coding style error::$e_c"
-          done < c-s-r.log
-          exit 1
-            fi
+          if [ -s c-s-r.log ]; then
+            while IFS= read -r line; do
+              file=$(echo "$line" | cut -d ':' -f 1)
+              line_num=$(echo "$line" | cut -d ':' -f 2)
+              error_type=$(echo "$line" | cut -d ':' -f 3 | cut -d '-' -f 1)
+              error_code=$(echo "$line" | cut -d ':' -f 4)
+              echo "::error file=$file,line=$line_num,title=$error_type coding style error::$error_code"
+            done < c-s-r.log
+            exit 1
+          fi
 
   check_program_compilation:
     name: Check Program Compilation
     runs-on: ubuntu-latest
     container:
-        image: epitechcontent/epitest-docker
-      needs: check_coding_style
+      image: epitechcontent/epitest-docker
+    needs: check_coding_style
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Compile Program
         run: make
         timeout-minutes: 2
-
       - name: Clean Compilation
         run: make clean
-
       - name: Verify Executables
         run: |
           IFS=',' read -ra EXECS <<< "$EXECUTABLES"
@@ -77,7 +73,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
       - name: Run Tests
         run: make tests_run
         timeout-minutes: 2
@@ -89,9 +84,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
       - name: Mirror to Repository
         uses: pixta-dev/repository-mirroring-action@v1
         with:
-          target_repo_url: ${{ env.MIRROR_URL}}
+          target_repo_url: ${{ env.MIRROR_URL }}
           ssh_private_key: ${{ secrets.SHHPK }}
